@@ -26,7 +26,7 @@ def get_histo_head():
              le2mtrans(u"Period\npayoff"), le2mtrans(u"Cumulative\npayoff")]
 
 
-def get_text_explanation():
+def get_txt_expl_decision():
     return trans_IC(u"")
 
 

@@ -11,37 +11,32 @@ from identiteConflitsTexts import trans_IC
 import identiteConflitsTexts as texts_IC
 from client.cltgui.cltguidialogs import GuiHistorique
 from client.cltgui.cltguiwidgets import WPeriod, WExplication, WSpinbox
+from identiteConflitsWidget import Matrice, Saisies
 
 
 logger = logging.getLogger("le2m")
 
 
 class GuiDecision(QtGui.QDialog):
-    def __init__(self, defered, automatique, parent, period, historique):
+    def __init__(self, defered, automatique, parent, labels, valeurs):
         super(GuiDecision, self).__init__(parent)
 
         # variables
         self._defered = defered
         self._automatique = automatique
-        self._historique = GuiHistorique(self, historique)
+        self._valeurs = valeurs
 
         layout = QtGui.QVBoxLayout(self)
 
-        # should be removed if one-shot game
-        wperiod = WPeriod(
-            period=period, ecran_historique=self._historique)
-        layout.addWidget(wperiod)
-
         wexplanation = WExplication(
-            text=texts_IC.get_text_explanation(),
+            text=texts_IC.get_txt_expl_decision(),
             size=(450, 80), parent=self)
         layout.addWidget(wexplanation)
 
-        self._wdecision = WSpinbox(
-            label=trans_IC(u"label decision"),
-            minimum=pms.DECISION_MIN, maximum=pms.DECISION_MAX,
-            interval=pms.DECISION_STEP, automatique=self._automatique,
-            parent=self)
+        wmatrice = Matrice(labels, valeurs)
+        layout.addWidget(wmatrice)
+
+        self._wdecision = Saisies(labels, self._automatique)
         layout.addWidget(self._wdecision)
 
         buttons = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Ok)
@@ -66,7 +61,13 @@ class GuiDecision(QtGui.QDialog):
             self._timer_automatique.stop()
         except AttributeError:
             pass
-        decision = self._wdecision.get_value()
+        vals = self._wdecision.get_values()
+        if vals not in self._valeurs:
+            QtGui.QMessageBox.warning(
+                self, u"Attention", u"Au moins une des valeurs saisies n'est "
+                                    u"pas dans la matrice proposée")
+            return
+        decision = self._valeurs.index(vals)
         if not self._automatique:
             confirmation = QtGui.QMessageBox.question(
                 self, le2mtrans(u"Confirmation"),
@@ -74,6 +75,6 @@ class GuiDecision(QtGui.QDialog):
                 QtGui.QMessageBox.No | QtGui.QMessageBox.Yes)
             if confirmation != QtGui.QMessageBox.Yes: 
                 return
-        logger.info(u"Send back {}".format(decision))
+        logger.info(u"Send back {} ({})".format(decision, vals))
         self.accept()
         self._defered.callback(decision)

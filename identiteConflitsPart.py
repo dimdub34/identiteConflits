@@ -57,10 +57,30 @@ class PartieIC(Partie):
         """
         logger.debug(u"{} Decision".format(self.joueur))
         debut = datetime.now()
-        self.currentperiod.IC_decision = yield(self.remote.callRemote(
-            "display_decision"))
-        self.currentperiod.IC_decisiontime = (datetime.now() - debut).seconds
-        self.joueur.info(u"{}".format(self.currentperiod.IC_decision))
+        # SAME
+        for i in range(1, 7):
+            dec = yield(self.remote.callRemote("display_decision", pms.SAME, i))
+            setattr(self.currentperiod, "IC_decision_same_{}".format(i), dec)
+        self.currentperiod.IC_decision_same_time = (datetime.now() - debut).seconds
+        self.joueur.info(u"Same: {}".format(
+            [getattr(self.currentperiod, "IC_decision_same_{}".format(i)) for
+             i in range(1, 7)]))
+        # MIXED
+        for i in range(1, 7):
+            dec = yield(self.remote.callRemote("display_decision", pms.MIXED, i))
+            setattr(self.currentperiod, "IC_decision_mixed_{}".format(i), dec)
+        self.currentperiod.IC_decision_mixed_time = (datetime.now() - debut).seconds
+        self.joueur.info(u"Mixed: {}".format(
+            [getattr(self.currentperiod, "IC_decision_mixed_{}".format(i)) for
+             i in range(1, 7)]))
+        # DIFFERENT
+        for i in range(1, 7):
+            dec = yield(self.remote.callRemote("display_decision", pms.DIFFERENT, i))
+            setattr(self.currentperiod, "IC_decision_different_{}".format(i), dec)
+        self.currentperiod.IC_decision_different_time = (datetime.now() - debut).seconds
+        self.joueur.info(u"Different: {}".format(
+            [getattr(self.currentperiod, "IC_decision_different_{}".format(i)) for
+             i in range(1, 7)]))
         self.joueur.remove_waitmode()
 
     def compute_periodpayoff(self):
@@ -131,8 +151,30 @@ class RepetitionsIC(Base):
     IC_period = Column(Integer)
     IC_treatment = Column(Integer)
     IC_group = Column(Integer)
-    IC_decision = Column(Integer)
-    IC_decisiontime = Column(Integer)
+    IC_identity_1 = Column(Integer)
+    IC_identity_2 = Column(Integer)
+    IC_identity_combined = Column(Integer)
+    IC_decision_same_1 = Column(Integer)
+    IC_decision_same_2 = Column(Integer)
+    IC_decision_same_3 = Column(Integer)
+    IC_decision_same_4 = Column(Integer)
+    IC_decision_same_5 = Column(Integer)
+    IC_decision_same_6 = Column(Integer)
+    IC_decision_same_time = Column(Integer)
+    IC_decision_mixed_1 = Column(Integer)
+    IC_decision_mixed_2 = Column(Integer)
+    IC_decision_mixed_3 = Column(Integer)
+    IC_decision_mixed_4 = Column(Integer)
+    IC_decision_mixed_5 = Column(Integer)
+    IC_decision_mixed_6 = Column(Integer)
+    IC_decision_mixed_time = Column(Integer)
+    IC_decision_different_1 = Column(Integer)
+    IC_decision_different_2 = Column(Integer)
+    IC_decision_different_3 = Column(Integer)
+    IC_decision_different_4 = Column(Integer)
+    IC_decision_different_5 = Column(Integer)
+    IC_decision_different_6 = Column(Integer)
+    IC_decision_different_time = Column(Integer)
     IC_periodpayoff = Column(Float)
     IC_cumulativepayoff = Column(Float)
 

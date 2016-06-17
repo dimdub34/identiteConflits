@@ -23,7 +23,10 @@ class Serveur(object):
             lambda _: self._le2mserv.gestionnaire_graphique. \
             display_information2(
                 utiltools.get_module_info(pms), le2mtrans(u"Parameters"))
-        actions[le2mtrans(u"Start")] = lambda _: self._demarrer()
+        actions[le2mtrans(u"Start") + u" identité simple"] = \
+            lambda _: self._demarrer(pms.get_treatment("simple"))
+        actions[le2mtrans(u"Start") + u" identité double"] = \
+            lambda _: self._demarrer(pms.get_treatment("double"))
         actions[le2mtrans(u"Display payoffs")] = \
             lambda _: self._le2mserv.gestionnaire_experience.\
             display_payoffs_onserver("identiteConflits")
@@ -36,14 +39,28 @@ class Serveur(object):
         return
 
     @defer.inlineCallbacks
-    def _demarrer(self):
+    def _demarrer(self, treatment):
         """
         Start the part
         :return:
         """
+        pms.TREATMENT = treatment
+
         # check conditions =====================================================
+        # nb of players and group size
+        if self._le2mserv.gestionnaire_joueurs.nombre_joueurs % 4 != 0:
+            self._le2mserv.gestionnaire_graphique.display_error(
+                u"Nombre de joueurs non multiple de 4")
+            return
+        else:
+            pms.TAILLE_GROUPES = \
+                self._le2mserv.gestionnaire_joueurs.nombre_joueurs / 4
+
+        # confirmation
         if not self._le2mserv.gestionnaire_graphique.question(
-                        le2mtrans(u"Start") + u" identiteConflits?"):
+                        le2mtrans(u"Start") +
+                        u" identiteConflits (treatment identité {})?".format(
+                            pms.get_treatment(pms.TREATMENT))):
             return
 
         # init part ============================================================
@@ -58,15 +75,14 @@ class Serveur(object):
             le2mtrans(u"Configure"), self._tous, "configure"))
         
         # form groups
-        if pms.TAILLE_GROUPES > 0:
-            try:
-                self._le2mserv.gestionnaire_groupes.former_groupes(
-                    self._le2mserv.gestionnaire_joueurs.get_players(),
-                    pms.TAILLE_GROUPES, forcer_nouveaux=True)
-            except ValueError as e:
-                self._le2mserv.gestionnaire_graphique.display_error(
-                    e.message)
-                return
+        try:
+            self._le2mserv.gestionnaire_groupes.former_groupes(
+                self._le2mserv.gestionnaire_joueurs.get_players(),
+                pms.TAILLE_GROUPES, forcer_nouveaux=False)
+        except ValueError as e:
+            self._le2mserv.gestionnaire_graphique.display_error(
+                e.message)
+            return
     
         # Start part ===========================================================
         for period in range(1 if pms.NOMBRE_PERIODES else 0,
