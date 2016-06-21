@@ -8,9 +8,7 @@ from PyQt4 import QtGui, QtCore
 from util.utili18n import le2mtrans
 import identiteConflitsParams as pms
 from identiteConflitsTexts import trans_IC
-import identiteConflitsTexts as texts_IC
-from client.cltgui.cltguidialogs import GuiHistorique
-from client.cltgui.cltguiwidgets import WPeriod, WExplication, WSpinbox
+from client.cltgui.cltguiwidgets import WExplication
 from identiteConflitsWidget import Matrice, Saisies
 
 
@@ -18,7 +16,7 @@ logger = logging.getLogger("le2m")
 
 
 class GuiDecision(QtGui.QDialog):
-    def __init__(self, defered, automatique, parent, labels, valeurs):
+    def __init__(self, defered, automatique, parent, txt_expl, labels, valeurs):
         super(GuiDecision, self).__init__(parent)
 
         # variables
@@ -29,7 +27,7 @@ class GuiDecision(QtGui.QDialog):
         layout = QtGui.QVBoxLayout(self)
 
         wexplanation = WExplication(
-            text=texts_IC.get_txt_expl_decision(),
+            text=txt_expl,
             size=(450, 80), parent=self)
         layout.addWidget(wexplanation)
 

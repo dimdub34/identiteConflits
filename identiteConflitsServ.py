@@ -161,8 +161,8 @@ class Serveur(object):
                 "identiteConflits")
         
             # summary
-            yield(self._le2mserv.gestionnaire_experience.run_step(
-                le2mtrans(u"Summary"), self._tous, "display_summary"))
+            # yield(self._le2mserv.gestionnaire_experience.run_step(
+            #     le2mtrans(u"Summary"), self._tous, "display_summary"))
 
         # ======================================================================
         #

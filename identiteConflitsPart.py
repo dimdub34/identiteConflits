@@ -137,19 +137,19 @@ class PartieIC(Partie):
             self.joueur,
             self.currentperiod.IC_periodpayoff))
 
-    @defer.inlineCallbacks
-    def display_summary(self, *args):
-        """
-        Send a dictionary with the period content values to the remote.
-        The remote creates the text and the history
-        :param args:
-        :return:
-        """
-        logger.debug(u"{} Summary".format(self.joueur))
-        yield(self.remote.callRemote(
-            "display_summary", self.currentperiod.todict()))
-        self.joueur.info("Ok")
-        self.joueur.remove_waitmode()
+    # @defer.inlineCallbacks
+    # def display_summary(self, *args):
+    #     """
+    #     Send a dictionary with the period content values to the remote.
+    #     The remote creates the text and the history
+    #     :param args:
+    #     :return:
+    #     """
+    #     logger.debug(u"{} Summary".format(self.joueur))
+    #     yield(self.remote.callRemote(
+    #         "display_summary", self.currentperiod.todict()))
+    #     self.joueur.info("Ok")
+    #     self.joueur.remove_waitmode()
 
     @defer.inlineCallbacks
     def compute_partpayoff(self):

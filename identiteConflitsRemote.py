@@ -4,7 +4,6 @@ import logging
 import random
 
 from twisted.internet import defer
-from twisted.spread import pb
 from client.cltremote import IRemote
 from client.cltgui.cltguidialogs import GuiRecapitulatif
 import identiteConflitsParams as pms
@@ -58,6 +57,8 @@ class RemoteIC(IRemote):
         :return: deferred
         """
         logger.info(u"{} Decision".format(self._le2mclt.uid))
+
+        # get the matrix
         if q_type == pms.MIXED and q_num > 6:
             mat = pms.MATRIX.get(q_num - 6)
             matrice = [(j, i) for i, j in mat]
@@ -68,29 +69,39 @@ class RemoteIC(IRemote):
             decision = matrice.index(random.choice(matrice))
             logger.info(u"{} Send back {}".format(self._le2mclt.uid, decision))
             return decision
-        else: 
+
+        else:
+            # get the explanation text
+            if pms.TREATMENT == pms.get_treatment("simple"):
+                txt_expl, labels = texts_IC.get_txt_expl_decision(
+                    self._identity_1, q_type)
+            else:
+                txt_expl, labels = texts_IC.get_txt_expl_decision(
+                    self._identity_combined, q_type)
+
+            # display the screen
             defered = defer.Deferred()
             ecran_decision = GuiDecision(
                 defered, self._le2mclt.automatique,
-                self._le2mclt.screen, matrice)
+                self._le2mclt.screen, txt_expl, matrice)
             ecran_decision.show()
             return defered
 
-    def remote_display_summary(self, period_content):
-        """
-        Display the summary screen
-        :param period_content: dictionary with the content of the current period
-        :return: deferred
-        """
-        logger.info(u"{} Summary".format(self._le2mclt.uid))
-        self.histo.append([period_content.get(k) for k in self._histo_vars])
-        if self._le2mclt.simulation:
-            return 1
-        else:
-            defered = defer.Deferred()
-            ecran_recap = GuiRecapitulatif(
-                defered, self._le2mclt.automatique, self._le2mclt.screen,
-                self.currentperiod, self.histo,
-                texts_IC.get_text_summary(period_content))
-            ecran_recap.show()
-            return defered
+    # def remote_display_summary(self, period_content):
+    #     """
+    #     Display the summary screen
+    #     :param period_content: dictionary with the content of the current period
+    #     :return: deferred
+    #     """
+    #     logger.info(u"{} Summary".format(self._le2mclt.uid))
+    #     self.histo.append([period_content.get(k) for k in self._histo_vars])
+    #     if self._le2mclt.simulation:
+    #         return 1
+    #     else:
+    #         defered = defer.Deferred()
+    #         ecran_recap = GuiRecapitulatif(
+    #             defered, self._le2mclt.automatique, self._le2mclt.screen,
+    #             self.currentperiod, self.histo,
+    #             texts_IC.get_text_summary(period_content))
+    #         ecran_recap.show()
+    #         return defered
