@@ -9,6 +9,7 @@ from server.servbase import Base
 from server.servparties import Partie
 from util.utiltools import get_module_attributes
 import identiteConflitsParams as pms
+from random import randint
 
 
 logger = logging.getLogger("le2m")
@@ -24,25 +25,60 @@ class PartieIC(Partie):
         super(PartieIC, self).__init__(
             nom="identiteConflits", nom_court="IC",
             joueur=joueur, le2mserv=le2mserv)
+
+        self._current_sequence = 0
+        self._id1 = 0
+        self._id2 = 0
+        self._id_combined = 0
+
         self.IC_gain_ecus = 0
         self.IC_gain_euros = 0
 
     @defer.inlineCallbacks
-    def configure(self):
+    def configure(self, current_sequence):
         logger.debug(u"{} Configure".format(self.joueur))
+        self._current_sequence = current_sequence
         yield (self.remote.callRemote("configure", get_module_attributes(pms)))
         self.joueur.info(u"Ok")
+
+    @defer.inlineCallbacks
+    def set_identities(self, id1, id2):
+        """
+        Set both identities and determines the combined one
+        :param id1:
+        :param id2:
+        :return:
+        """
+        self._id1 = id1
+        self._id2 = id2
+        if self._id1 == pms.ID1:
+            if self._id2 == pms.ID2:
+                self._id_combined = pms.ID1__ID2
+            else:
+                self._id_combined = pms.ID1__ID2E
+        else:
+            if self._id2 == pms.ID2:
+                self._id_combined = pms.ID1E__ID2
+            else:
+                self._id_combined = pms.ID1E__ID2E
+        yield (self.remote.callRemote(
+            "set_identities", self._id1, self._id2, self._id_combined))
 
     @defer.inlineCallbacks
     def newperiod(self, period):
         """
         Create a new period and inform the remote
-        If this is the first period then empty the historic
-        :param periode:
+        If this is the first period then clear the historic
+        :param period:
         :return:
         """
         logger.debug(u"{} New Period".format(self.joueur))
         self.currentperiod = RepetitionsIC(period)
+        self.currentperiod.IC_sequence = self._current_sequence
+        self.currentperiod.IC_treatment = pms.TREATMENT
+        self.currentperiod.IC_identity_1 = self._id1
+        self.currentperiod.IC_identity_2 = self._id2
+        self.currentperiod.IC_identity_combined = self._id_combined
         self.le2mserv.gestionnaire_base.ajouter(self.currentperiod)
         self.repetitions.append(self.currentperiod)
         yield (self.remote.callRemote("newperiod", period))
@@ -56,31 +92,24 @@ class PartieIC(Partie):
         :return:
         """
         logger.debug(u"{} Decision".format(self.joueur))
+        # set the order
+        self.currentperiod.IC_order = randint(1, 3)
+        order = getattr(pms, "ORDER_{}".format(self.currentperiod.IC_order))[:]
+
         debut = datetime.now()
-        # SAME
-        for i in range(1, 7):
-            dec = yield(self.remote.callRemote("display_decision", pms.SAME, i))
-            setattr(self.currentperiod, "IC_decision_same_{}".format(i), dec)
-        self.currentperiod.IC_decision_same_time = (datetime.now() - debut).seconds
-        self.joueur.info(u"Same: {}".format(
-            [getattr(self.currentperiod, "IC_decision_same_{}".format(i)) for
-             i in range(1, 7)]))
-        # MIXED
-        for i in range(1, 7):
-            dec = yield(self.remote.callRemote("display_decision", pms.MIXED, i))
-            setattr(self.currentperiod, "IC_decision_mixed_{}".format(i), dec)
-        self.currentperiod.IC_decision_mixed_time = (datetime.now() - debut).seconds
-        self.joueur.info(u"Mixed: {}".format(
-            [getattr(self.currentperiod, "IC_decision_mixed_{}".format(i)) for
-             i in range(1, 7)]))
-        # DIFFERENT
-        for i in range(1, 7):
-            dec = yield(self.remote.callRemote("display_decision", pms.DIFFERENT, i))
-            setattr(self.currentperiod, "IC_decision_different_{}".format(i), dec)
-        self.currentperiod.IC_decision_different_time = (datetime.now() - debut).seconds
-        self.joueur.info(u"Different: {}".format(
-            [getattr(self.currentperiod, "IC_decision_different_{}".format(i)) for
-             i in range(1, 7)]))
+        for q in order:
+            q_type, q_num = q.split("_")
+            q_type = pms.SAME if q_type == "s" else pms.MIXED if q_type == "m" \
+                else pms.DIFFERENT
+            dec = yield(self.remote.callRemote(
+                "display_decision", q_type, int(q_num)))
+            q_dec = "same" if q_type == pms.SAME else "mixed" if \
+                q_type == pms.MIXED else "different"
+            setattr(self.currentperiod,
+                    "IC_decision_{}_{}".format(q_dec, q_num), dec)
+            self.joueur.info(u"q - {}".format(dec))
+        self.currentperiod.IC_decision_different_time = \
+            (datetime.now() - debut).seconds
         self.joueur.remove_waitmode()
 
     def compute_periodpayoff(self):
@@ -148,6 +177,8 @@ class RepetitionsIC(Base):
         Integer,
         ForeignKey("partie_identiteConflits.partie_id"))
 
+    IC_sequence = Column(Integer)
+    IC_order = Column(Integer)
     IC_period = Column(Integer)
     IC_treatment = Column(Integer)
     IC_group = Column(Integer)
@@ -160,26 +191,29 @@ class RepetitionsIC(Base):
     IC_decision_same_4 = Column(Integer)
     IC_decision_same_5 = Column(Integer)
     IC_decision_same_6 = Column(Integer)
-    IC_decision_same_time = Column(Integer)
     IC_decision_mixed_1 = Column(Integer)
     IC_decision_mixed_2 = Column(Integer)
     IC_decision_mixed_3 = Column(Integer)
     IC_decision_mixed_4 = Column(Integer)
     IC_decision_mixed_5 = Column(Integer)
     IC_decision_mixed_6 = Column(Integer)
-    IC_decision_mixed_time = Column(Integer)
+    IC_decision_mixed_7 = Column(Integer)
+    IC_decision_mixed_8 = Column(Integer)
+    IC_decision_mixed_9 = Column(Integer)
+    IC_decision_mixed_10 = Column(Integer)
+    IC_decision_mixed_11 = Column(Integer)
+    IC_decision_mixed_12 = Column(Integer)
     IC_decision_different_1 = Column(Integer)
     IC_decision_different_2 = Column(Integer)
     IC_decision_different_3 = Column(Integer)
     IC_decision_different_4 = Column(Integer)
     IC_decision_different_5 = Column(Integer)
     IC_decision_different_6 = Column(Integer)
-    IC_decision_different_time = Column(Integer)
+    ID_decision_time = Column(Integer)
     IC_periodpayoff = Column(Float)
     IC_cumulativepayoff = Column(Float)
 
     def __init__(self, period):
-        self.IC_treatment = pms.TREATMENT
         self.IC_period = period
         self.IC_decisiontime = 0
         self.IC_periodpayoff = 0

@@ -52,25 +52,27 @@ class RemoteIC(IRemote):
         self._identity_2 = identity_2
         self._identity_combined = identity_combined
 
-    def remote_display_decision(self, which_part, matrice_num):
+    def remote_display_decision(self, q_type, q_num):
         """
         Display the decision screen
         :return: deferred
         """
         logger.info(u"{} Decision".format(self._le2mclt.uid))
+        if q_type == pms.MIXED and q_num > 6:
+            mat = pms.MATRIX.get(q_num - 6)
+            matrice = [(j, i) for i, j in mat]
+        else:
+            matrice = pms.MATRIX.get(q_num)
+
         if self._le2mclt.simulation:
-            decision = \
-                random.randrange(
-                    pms.DECISION_MIN,
-                    pms.DECISION_MAX + pms.DECISION_STEP,
-                    pms.DECISION_STEP)
+            decision = matrice.index(random.choice(matrice))
             logger.info(u"{} Send back {}".format(self._le2mclt.uid, decision))
             return decision
         else: 
             defered = defer.Deferred()
             ecran_decision = GuiDecision(
                 defered, self._le2mclt.automatique,
-                self._le2mclt.screen, self.currentperiod, self.histo)
+                self._le2mclt.screen, matrice)
             ecran_decision.show()
             return defered
 

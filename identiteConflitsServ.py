@@ -14,6 +14,7 @@ logger = logging.getLogger("le2m.{}".format(__name__))
 class Serveur(object):
     def __init__(self, le2mserv):
         self._le2mserv = le2mserv
+        self._current_sequence = 0
 
         # creation of the menu (will be placed in the "part" menu on the
         # server screen)
@@ -41,20 +42,23 @@ class Serveur(object):
     @defer.inlineCallbacks
     def _demarrer(self, treatment):
         """
-        Start the part
+        :param treatment the treatment to start
         :return:
         """
+
         pms.TREATMENT = treatment
 
-        # check conditions =====================================================
+        # ======================================================================
+        #
+        # check conditions
+        #
+        # ======================================================================
+
         # nb of players and group size
         if self._le2mserv.gestionnaire_joueurs.nombre_joueurs % 4 != 0:
             self._le2mserv.gestionnaire_graphique.display_error(
                 u"Nombre de joueurs non multiple de 4")
             return
-        else:
-            pms.TAILLE_GROUPES = \
-                self._le2mserv.gestionnaire_joueurs.nombre_joueurs / 4
 
         # confirmation
         if not self._le2mserv.gestionnaire_graphique.question(
@@ -63,7 +67,14 @@ class Serveur(object):
                             pms.get_treatment(pms.TREATMENT))):
             return
 
-        # init part ============================================================
+        # ======================================================================
+        #
+        # init part
+        #
+        # ======================================================================
+
+        self._current_sequence += 1
+
         yield (self._le2mserv.gestionnaire_experience.init_part(
             "identiteConflits", "PartieIC",
             "RemoteIC", pms))
@@ -72,19 +83,60 @@ class Serveur(object):
 
         # set parameters on remotes
         yield (self._le2mserv.gestionnaire_experience.run_step(
-            le2mtrans(u"Configure"), self._tous, "configure"))
-        
-        # form groups
-        try:
-            self._le2mserv.gestionnaire_groupes.former_groupes(
-                self._le2mserv.gestionnaire_joueurs.get_players(),
-                pms.TAILLE_GROUPES, forcer_nouveaux=False)
-        except ValueError as e:
-            self._le2mserv.gestionnaire_graphique.display_error(
-                e.message)
-            return
-    
-        # Start part ===========================================================
+            le2mtrans(u"Configure"), self._tous, "configure",
+            self._current_sequence))
+
+        # ======================================================================
+        #
+        # set identities - only if first sequence
+        # we set both identities directly
+        #
+        # ======================================================================
+
+        players = [p.get_part("identiteConflits") for p in
+                   self._le2mserv.gestionnaire_joueurs.get_players()]
+
+        if self._current_sequence == 1:
+            # id1
+            self._tous__id1 = players[: len(players)/2]
+            self._tous__id1e = players[len(players)/2:]
+            # id2
+            self._tous__id2 = self._tous__id1[: len(self._tous__id1)/2] + \
+                        self._tous__id1e[: len(self._tous__id1e)/2]
+            self._tous__id2e = self._tous__id1[len(self._tous__id1)/2:] + \
+                        self._tous__id1e[len(self._tous__id1e)/2:]
+            # combined
+            self._tous__id1_id2 = [p for p in players if p in self._tous__id1
+                                   and p in self._tous__id2]
+            self._tous__id1_id2e = [p for p in players if p in self._tous__id1
+                                   and p in self._tous__id2e]
+            self._tous__id1e_id2 = [p for p in players if p in self._tous__id1e
+                                   and p in self._tous__id2]
+            self._tous__id1e_id2e = [p for p in players if p in self._tous__id1e
+                                   and p in self._tous__id2e]
+
+        # seq 1 or 2, we set the identities in the players' data
+        for p in players:
+            p.set_identities(
+                pms.ID1 if p in self._tous__id1 else pms.ID1E,
+                pms.ID2 if p in self._tous__id2 else pms.ID2E
+            )
+
+        # display on server
+        self._le2mserv.gestionnaire_graphique.infoserv(
+            [u"ID1", self._tous__id1, None, u"ID1E", self._tous__id1e, None,
+             u"ID2", self._tous__id2, None, u"ID2E", self._tous__id2e, None,
+             u"Combined",
+             u"ID1_ID2", self._tous__id1_id2,
+             u"ID1_ID2E", self._tous__id1_id2e,
+             u"ID1E_ID2", self._tous__id1e_id2,
+             u"ID1E_ID2E", self._tous__id1e_id2e])
+
+        # ======================================================================
+        #
+        # Start part
+        #
+        # ======================================================================
         for period in range(1 if pms.NOMBRE_PERIODES else 0,
                         pms.NOMBRE_PERIODES + 1):
 
@@ -111,7 +163,11 @@ class Serveur(object):
             # summary
             yield(self._le2mserv.gestionnaire_experience.run_step(
                 le2mtrans(u"Summary"), self._tous, "display_summary"))
-        
-        # End of part ==========================================================
+
+        # ======================================================================
+        #
+        # End of part
+        #
+        # ======================================================================
         yield (self._le2mserv.gestionnaire_experience.finalize_part(
             "identiteConflits"))
