@@ -24,10 +24,10 @@ class Serveur(object):
             lambda _: self._le2mserv.gestionnaire_graphique. \
             display_information2(
                 utiltools.get_module_info(pms), le2mtrans(u"Parameters"))
-        actions[le2mtrans(u"Start") + u" identité simple"] = \
-            lambda _: self._demarrer(pms.get_treatment("simple"))
-        actions[le2mtrans(u"Start") + u" identité double"] = \
-            lambda _: self._demarrer(pms.get_treatment("double"))
+        actions[le2mtrans(u"Start") + u" mono-identité"] = \
+            lambda _: self._demarrer(pms.MONO)
+        actions[le2mtrans(u"Start") + u" double-identité"] = \
+            lambda _: self._demarrer(pms.DOUBLE)
         actions[le2mtrans(u"Display payoffs")] = \
             lambda _: self._le2mserv.gestionnaire_experience.\
             display_payoffs_onserver("identiteConflits")
@@ -81,6 +81,11 @@ class Serveur(object):
         self._tous = self._le2mserv.gestionnaire_joueurs.get_players(
             'identiteConflits')
 
+        # infos on server list
+        self._le2mserv.gestionnaire_graphique.infoserv(
+            [u"Sequence {}".format(self._current_sequence),
+             u"Treatment {}".format(pms.get_treatment(pms.TREATMENT))])
+
         # set parameters on remotes
         yield (self._le2mserv.gestionnaire_experience.run_step(
             le2mtrans(u"Configure"), self._tous, "configure",
@@ -123,14 +128,18 @@ class Serveur(object):
             )
 
         # display on server
+        def get_players(list_parts):
+            return u"{}".format([part.joueur for part in list_parts])
+
         self._le2mserv.gestionnaire_graphique.infoserv(
-            [u"ID1", self._tous__id1, None, u"ID1E", self._tous__id1e, None,
-             u"ID2", self._tous__id2, None, u"ID2E", self._tous__id2e, None,
-             u"Combined",
-             u"ID1_ID2", self._tous__id1_id2,
-             u"ID1_ID2E", self._tous__id1_id2e,
-             u"ID1E_ID2", self._tous__id1e_id2,
-             u"ID1E_ID2E", self._tous__id1e_id2e])
+            [u"ID1", get_players(self._tous__id1), None,
+             u"ID1E", get_players(self._tous__id1e), None,
+             u"ID2", get_players(self._tous__id2), None, u"ID2E",
+             get_players(self._tous__id2e), None, u"Combined", u"ID1_ID2",
+             get_players(self._tous__id1_id2), u"ID1_ID2E",
+             get_players(self._tous__id1_id2e), u"ID1E_ID2",
+             get_players(self._tous__id1e_id2), u"ID1E_ID2E",
+             get_players(self._tous__id1e_id2e)])
 
         # ======================================================================
         #
@@ -160,9 +169,9 @@ class Serveur(object):
             self._le2mserv.gestionnaire_experience.compute_periodpayoffs(
                 "identiteConflits")
         
-            # summary
-            # yield(self._le2mserv.gestionnaire_experience.run_step(
-            #     le2mtrans(u"Summary"), self._tous, "display_summary"))
+            # summary (only on the server side for this experiment)
+            yield(self._le2mserv.gestionnaire_experience.run_step(
+                le2mtrans(u"Summary"), self._tous, "display_summary"))
 
         # ======================================================================
         #

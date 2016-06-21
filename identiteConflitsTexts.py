@@ -24,6 +24,7 @@ except IOError:
 def get_txt_identity(identity):
     if identity == pms.ID1:
         return u"jaune"
+        return u"jaune"
     elif identity == pms.ID1E:
         return u"non-jaune"
     elif identity == pms.ID2:
@@ -59,7 +60,7 @@ def get_txt_expl_decision(id_or_combined, q_type):
 
     if q_type == pms.SAME:
         txt += u"deux personnes du groupe {}.".format(
-            get_txt_expl_decision(id_or_combined))
+            get_txt_identity(id_or_combined))
         labels = (u"Une personne " + get_txt_identity(id_or_combined),
                   u"Une personne " + get_txt_identity(id_or_combined))
 

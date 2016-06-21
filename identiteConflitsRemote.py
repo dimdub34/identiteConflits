@@ -46,7 +46,7 @@ class RemoteIC(IRemote):
         if self.currentperiod == 1:
             del self.histo[1:]
 
-    def remote_set_identity(self, identity_1, identity_2, identity_combined):
+    def remote_set_identities(self, identity_1, identity_2, identity_combined):
         self._identity_1 = identity_1
         self._identity_2 = identity_2
         self._identity_combined = identity_combined
@@ -83,7 +83,7 @@ class RemoteIC(IRemote):
             defered = defer.Deferred()
             ecran_decision = GuiDecision(
                 defered, self._le2mclt.automatique,
-                self._le2mclt.screen, txt_expl, matrice)
+                self._le2mclt.screen, txt_expl, labels, matrice)
             ecran_decision.show()
             return defered
 

@@ -34,14 +34,14 @@ class GuiDecision(QtGui.QDialog):
         wmatrice = Matrice(labels, valeurs)
         layout.addWidget(wmatrice)
 
-        self._wdecision = Saisies(labels, self._automatique)
+        self._wdecision = Saisies(labels, valeurs, self._automatique)
         layout.addWidget(self._wdecision)
 
         buttons = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Ok)
         buttons.accepted.connect(self._accept)
         layout.addWidget(buttons)
 
-        self.setWindowTitle(trans_IC(u"Title"))
+        self.setWindowTitle(trans_IC(u"Décision"))
         self.adjustSize()
         self.setFixedSize(self.size())
 

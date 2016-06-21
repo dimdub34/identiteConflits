@@ -9,7 +9,9 @@ which means that you should ask to the developer ;-)
 ============================================================================="""
 
 # variables --------------------------------------------------------------------
-TREATMENTS = {0: "simple", 1: "double"}
+MONO = 0
+DOUBLE = 1
+TREATMENTS = {MONO: "mono", DOUBLE: "double"}
 
 
 def get_treatment(code_or_name):
@@ -39,7 +41,7 @@ MIXED = 1
 DIFFERENT = 2
 
 # parameters -------------------------------------------------------------------
-TREATMENT = get_treatment("simple")  # changed by the program, don't touch
+TREATMENT = MONO  # changed by the program, don't touch
 TAUX_CONVERSION = 1
 NOMBRE_PERIODES = 0
 MONNAIE = u"ecu"

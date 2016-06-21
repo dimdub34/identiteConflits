@@ -101,15 +101,16 @@ class PartieIC(Partie):
             q_type, q_num = q.split("_")
             q_type = pms.SAME if q_type == "s" else pms.MIXED if q_type == "m" \
                 else pms.DIFFERENT
-            dec = yield(self.remote.callRemote(
-                "display_decision", q_type, int(q_num)))
             q_dec = "same" if q_type == pms.SAME else "mixed" if \
                 q_type == pms.MIXED else "different"
+            logger.debug(u"{} - {} -> ({}, {})".format(
+                self.joueur, q, q_dec, q_num))
+            dec = yield(self.remote.callRemote(
+                "display_decision", q_type, int(q_num)))
             setattr(self.currentperiod,
                     "IC_decision_{}_{}".format(q_dec, q_num), dec)
-            self.joueur.info(u"q - {}".format(dec))
-        self.currentperiod.IC_decision_different_time = \
-            (datetime.now() - debut).seconds
+            self.joueur.info(u"{}_{} - {}".format(q_dec, q_num, dec))
+        self.currentperiod.ID_decision_time = (datetime.now() - debut).seconds
         self.joueur.remove_waitmode()
 
     def compute_periodpayoff(self):
@@ -137,19 +138,27 @@ class PartieIC(Partie):
             self.joueur,
             self.currentperiod.IC_periodpayoff))
 
-    # @defer.inlineCallbacks
-    # def display_summary(self, *args):
-    #     """
-    #     Send a dictionary with the period content values to the remote.
-    #     The remote creates the text and the history
-    #     :param args:
-    #     :return:
-    #     """
-    #     logger.debug(u"{} Summary".format(self.joueur))
-    #     yield(self.remote.callRemote(
-    #         "display_summary", self.currentperiod.todict()))
-    #     self.joueur.info("Ok")
-    #     self.joueur.remove_waitmode()
+    @defer.inlineCallbacks
+    def display_summary(self):
+        """
+        Send a dictionary with the period content values to the remote.
+        The remote creates the text and the history
+        :param args:
+        :return:
+        """
+        logger.debug(u"{} Summary".format(self.joueur))
+        # yield(self.remote.callRemote(
+        #     "display_summary", self.currentperiod.todict()))
+        dec_same = [getattr(self.currentperiod, "IC_decision_same_{}".format(i))
+                    for i in range(1, 7)]
+        self.joueur.info(u"Same {}".format(dec_same))
+        dec_mixed = [getattr(self.currentperiod, "IC_decision_mixed_{}".format(i))
+                    for i in range(1, 13)]
+        self.joueur.info(u"Mixed {}".format(dec_mixed))
+        dec_different = [getattr(self.currentperiod, "IC_decision_different_{}".format(i))
+                    for i in range(1, 7)]
+        self.joueur.info(u"Different {}".format(dec_different))
+        self.joueur.remove_waitmode()
 
     @defer.inlineCallbacks
     def compute_partpayoff(self):
@@ -181,7 +190,6 @@ class RepetitionsIC(Base):
     IC_order = Column(Integer)
     IC_period = Column(Integer)
     IC_treatment = Column(Integer)
-    IC_group = Column(Integer)
     IC_identity_1 = Column(Integer)
     IC_identity_2 = Column(Integer)
     IC_identity_combined = Column(Integer)
