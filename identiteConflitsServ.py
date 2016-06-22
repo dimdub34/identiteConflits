@@ -6,6 +6,7 @@ from twisted.internet import defer
 from util import utiltools
 from util.utili18n import le2mtrans
 import identiteConflitsParams as pms
+import random
 
 
 logger = logging.getLogger("le2m.{}".format(__name__))
@@ -164,19 +165,125 @@ class Serveur(object):
             # decision
             yield(self._le2mserv.gestionnaire_experience.run_step(
                 le2mtrans(u"Decision"), self._tous, "display_decision"))
-            
+
             # period payoffs
             self._le2mserv.gestionnaire_experience.compute_periodpayoffs(
                 "identiteConflits")
-        
+
             # summary (only on the server side for this experiment)
-            yield(self._le2mserv.gestionnaire_experience.run_step(
-                le2mtrans(u"Summary"), self._tous, "display_summary"))
+            self._le2mserv.gestionnaire_experience.run_step(
+                le2mtrans(u"Summary"), self._tous, "display_summary")
 
         # ======================================================================
         #
         # End of part
         #
         # ======================================================================
+
+        # choix d'une partie (déplacer dans le while si à faire pour chaque
+        # itération)
+        q_seq = random.randint(1, self._current_sequence)
+        self._le2mserv.gestionnaire_graphique.infoserv(
+            u"Rémunération de la séquence {}".format(q_seq))
+
+        self._le2mserv.gestionnaire_graphique.infoclt(
+            u"Calcul des payoffs".upper())
+
+        without_payoff = [j.get_part("identiteConflits") for j in
+                          self._le2mserv.gestionnaire_joueurs.get_players()]
+        pool_for_decisions = without_payoff[:]
+
+        while without_payoff:
+
+            q_type = random.choice([pms.SAME, pms.MIXED, pms.DIFFERENT])
+            q_mat = random.randint(1, len(pms.MATRIX) * 2 if
+                q_type == pms.MIXED else len(pms.MATRIX))
+            logger.info(u"Payoff: {}, {}".format(q_type, q_mat))
+
+            if q_mat > 6:
+                q_values = pms.MATRIX.get(q_mat-6)[::-1]
+            else:
+                q_values = pms.MATRIX.get(q_mat)
+
+            # we take one player at random (without removing it)
+            player = random.choice(pool_for_decisions)
+            player_data = player.data[q_seq][0]
+
+
+            # MONO
+            if pms.TREATMENT == pms.MONO:
+
+                player_id = player_data.IC_identity_1
+                pool_same = [p for p in without_payoff if
+                               p.data[q_seq][0].IC_identity_1 == player_id]
+                pool_diff = [p for p in without_payoff if
+                               p.data[q_seq][0].IC_identity_1 != player_id]
+
+            # DOUBLE
+            else:
+                player_id = player_data.IC_identity_combined
+                pool_same = [p for p in without_payoff if
+                             p.data[q_seq][0].IC_identity_combined == player_id]
+                pool_diff = [p for p in without_payoff if
+                             p.data[q_seq][0].IC_identity_combined != player_id]
+
+            if q_type == pms.SAME:
+                player_dec = getattr(player_data,
+                                     "IC_decision_same_{}".format(q_mat))
+                q_val = q_values[player_dec]
+                try:
+                    first = pool_same.pop()
+                    first.set_payoff(player.joueur, q_seq, q_type, q_mat,
+                                     q_values, player_dec, q_val[0])
+                    without_payoff.remove(first)
+                except IndexError:  # no more
+                    pass
+                try:
+                    second = pool_same.pop()
+                    second.set_payoff(player.joueur, q_seq, q_type, q_mat,
+                                      q_values, player_dec, q_val[1])
+                    without_payoff.remove(second)
+                except IndexError:  # no more
+                    pass
+
+            elif q_type == pms.MIXED:
+                player_dec = getattr(player_data,
+                                     "IC_decision_mixed_{}".format(q_mat))
+                q_val = q_values[player_dec]
+                try:
+                    first = pool_same.pop()
+                    first.set_payoff(player.joueur, q_seq, q_type, q_mat,
+                                     q_values, player_dec, q_val[0])
+                    without_payoff.remove(first)
+                except IndexError:  # no more
+                    pass
+                try:
+                    second = pool_diff.pop()
+                    second.set_payoff(player.joueur, q_seq, q_type, q_mat,
+                                      q_values, player_dec, q_val[1])
+                    without_payoff.remove(second)
+                except IndexError:  # no more
+                    pass
+
+            else:  # DIFFERENT
+                player_dec = getattr(player_data,
+                                     "IC_decision_different_{}".format(q_mat))
+                q_val = q_values[player_dec]
+                try:
+                    first = pool_diff.pop()
+                    first.set_payoff(player.joueur, q_seq, q_type, q_mat,
+                                     q_values, player_dec, q_val[0])
+                    without_payoff.remove(first)
+                except IndexError:  # no more
+                    pass
+                try:
+                    second = pool_diff.pop()
+                    second.set_payoff(player.joueur, q_seq, q_type, q_mat,
+                                      q_values, player_dec, q_val[1])
+                    without_payoff.remove(second)
+                except IndexError:  # no more
+                    pass
+
+        # finalize
         yield (self._le2mserv.gestionnaire_experience.finalize_part(
             "identiteConflits"))

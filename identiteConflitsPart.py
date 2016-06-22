@@ -30,9 +30,14 @@ class PartieIC(Partie):
         self._id1 = 0
         self._id2 = 0
         self._id_combined = 0
+        self._data = {}
 
         self.IC_gain_ecus = 0
         self.IC_gain_euros = 0
+
+    @property
+    def data(self):
+        return self._data
 
     @defer.inlineCallbacks
     def configure(self, current_sequence):
@@ -113,6 +118,16 @@ class PartieIC(Partie):
         self.currentperiod.ID_decision_time = (datetime.now() - debut).seconds
         self.joueur.remove_waitmode()
 
+    def set_payoff(self, decideur, q_seq, q_type, q_mat, q_values, decideur_dec,
+                   gain):
+        logger.debug(u"{}: {}, {}, {}, {}, {}, {}, {}".format(
+            self.joueur, decideur, q_seq, q_type, q_mat, q_values, decideur_dec,
+            gain))
+        self.IC_gain_ecus = gain
+        self.joueur.info(
+            u"décideur {} - seq {} - type {} - mat {} - choix {} - gain {}".format(
+                decideur, q_seq, q_type, q_mat, decideur_dec, gain))
+
     def compute_periodpayoff(self):
         """
         Compute the payoff for the period
@@ -125,7 +140,7 @@ class PartieIC(Partie):
         if self.currentperiod.IC_period < 2:
             self.currentperiod.IC_cumulativepayoff = \
                 self.currentperiod.IC_periodpayoff
-        else: 
+        else:
             previousperiod = self.periods[self.currentperiod.IC_period - 1]
             self.currentperiod.IC_cumulativepayoff = \
                 previousperiod.IC_cumulativepayoff + \
@@ -133,12 +148,13 @@ class PartieIC(Partie):
 
         # we store the period in the self.periodes dictionnary
         self.periods[self.currentperiod.IC_period] = self.currentperiod
+        self._data[self._current_sequence] = self.periods
 
         logger.debug(u"{} Period Payoff {}".format(
             self.joueur,
             self.currentperiod.IC_periodpayoff))
 
-    @defer.inlineCallbacks
+    # @defer.inlineCallbacks
     def display_summary(self):
         """
         Send a dictionary with the period content values to the remote.
@@ -170,7 +186,7 @@ class PartieIC(Partie):
         """
         logger.debug(u"{} Part Payoff".format(self.joueur))
 
-        self.IC_gain_ecus = self.currentperiod.IC_cumulativepayoff
+        # self.IC_gain_ecus = self.currentperiod.IC_cumulativepayoff
         self.IC_gain_euros = float(self.IC_gain_ecus) * float(pms.TAUX_CONVERSION)
         yield (self.remote.callRemote(
             "set_payoffs", self.IC_gain_euros, self.IC_gain_ecus))
