@@ -38,12 +38,16 @@ class Saisies(QtGui.QWidget):
 
         label_haut = QtGui.QLabel(labels[0])
         layout.addWidget(label_haut, 0, 0)
+        self._dec_haut = QtGui.QSpinBox()
+        self._dec_haut.setMinimum(0)
+        self._dec_haut.setMinimum(100)
+        self._dec_haut.setSingleStep(1)
+        self._dec_haut.setButtonSymbols(QtGui.QAbstractSpinBox.NoButtons)
+
+        layout.addWidget(self._dec_haut, 0, 1)
         label_bas = QtGui.QLabel(labels[1])
         layout.addWidget(label_bas, 1, 0)
-
-        self._dec_haut = WSpinbox(u"", 0, 100)
-        layout.addWidget(self._dec_haut, 0, 1)
-        self._dec_bas = WSpinbox(u"", 0, 100)
+        self._dec_bas = QtGui.QSpinBox()
         layout.addWidget(self._dec_bas, 1, 1)
 
         self.adjustSize()
@@ -61,8 +65,8 @@ if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
     labels = (u"Une personne rouge", u"Une personne non-rouge")
     valeurs = zip(range(1, 15), range(14, 0, -1))
-    mat = Matrice(labels, valeurs)
-    mat.show()
-    # sais = Saisies(labels, False)
-    # sais.show()
+    # mat = Matrice(labels, valeurs)
+    # mat.show()
+    sais = Saisies(labels, valeurs, False)
+    sais.show()
     sys.exit(app.exec_())

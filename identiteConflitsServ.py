@@ -180,12 +180,6 @@ class Serveur(object):
         #
         # ======================================================================
 
-        # choix d'une partie (déplacer dans le while si à faire pour chaque
-        # itération)
-        q_seq = random.randint(1, self._current_sequence)
-        self._le2mserv.gestionnaire_graphique.infoserv(
-            u"Rémunération de la séquence {}".format(q_seq))
-
         self._le2mserv.gestionnaire_graphique.infoclt(
             u"Calcul des payoffs".upper())
 
@@ -195,6 +189,7 @@ class Serveur(object):
 
         while without_payoff:
 
+            q_seq = random.randint(1, self._current_sequence)
             q_type = random.choice([pms.SAME, pms.MIXED, pms.DIFFERENT])
             q_mat = random.randint(1, len(pms.MATRIX) * 2 if
                 q_type == pms.MIXED else len(pms.MATRIX))
