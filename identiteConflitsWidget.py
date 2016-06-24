@@ -34,21 +34,12 @@ class Saisies(QtGui.QWidget):
     def __init__(self, labels, valeurs, automatique):
         QtGui.QWidget.__init__(self)
 
-        layout = QtGui.QGridLayout(self)
+        layout = QtGui.QHBoxLayout(self)
 
-        label_haut = QtGui.QLabel(labels[0])
-        layout.addWidget(label_haut, 0, 0)
-        self._dec_haut = QtGui.QSpinBox()
-        self._dec_haut.setMinimum(0)
-        self._dec_haut.setMinimum(100)
-        self._dec_haut.setSingleStep(1)
-        self._dec_haut.setButtonSymbols(QtGui.QAbstractSpinBox.NoButtons)
-
-        layout.addWidget(self._dec_haut, 0, 1)
-        label_bas = QtGui.QLabel(labels[1])
-        layout.addWidget(label_bas, 1, 0)
-        self._dec_bas = QtGui.QSpinBox()
-        layout.addWidget(self._dec_bas, 1, 1)
+        self._dec_haut = WSpinbox(label=labels[0], minimum=0, maximum=100)
+        layout.addWidget(self._dec_haut)
+        self._dec_bas = WSpinbox(label=labels[1], minimum=0, maximum=100)
+        layout.addWidget(self._dec_bas)
 
         self.adjustSize()
 
