@@ -71,15 +71,8 @@ class RemoteIC(IRemote):
             return decision
 
         else:
-            # get the explanation text
-            if pms.TREATMENT == pms.get_treatment("mono"):
-                txt_expl, labels = texts_IC.get_txt_expl_decision(
-                    self._identity_1, q_type)
-            else:
-                txt_expl, labels = texts_IC.get_txt_expl_decision(
-                    self._identity_combined, q_type)
-
-            # display the screen
+            txt_expl, labels = texts_IC.get_txt_expl_decision(
+                self._identity_1, self._identity_combined, q_type)
             defered = defer.Deferred()
             ecran_decision = GuiDecision(
                 defered, self._le2mclt.automatique,

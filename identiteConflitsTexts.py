@@ -35,8 +35,9 @@ def get_histo_head():
 
 def get_txt_expl_decision(id1, idcomb, q_type):
     """
-    :param id_or_combined:
-    :param q_type:
+    :param id1: the first identity of the player
+    :param idcomb: the combined identity (id1 and id1) of the player
+    :param q_type: the type of the question
     :return:
     """
     id1_txt = get_txt_identity(pms.ID1)
@@ -67,9 +68,9 @@ def get_txt_expl_decision(id1, idcomb, q_type):
                 id1_txt, id2_txt)
 
 
-    txt += u"Vous devez choisir une répartition entre "
+    txt += u" Vous devez choisir une répartition entre "
 
-    # MONO
+    # MONO =====================================================================
     if pms.TREATMENT == pms.MONO:
 
         if q_type == pms.SAME:
@@ -100,6 +101,7 @@ def get_txt_expl_decision(id1, idcomb, q_type):
                           u"Une personne du groupe " + id1_txt)
 
         else:
+
             if id1 == pms.ID1:
                 txt += u"deux personnes exclues du groupe {}.".format(id1_txt)
                 labels = (u"Une personne exclue du groupe " + id1_txt,
@@ -109,9 +111,10 @@ def get_txt_expl_decision(id1, idcomb, q_type):
                 labels = (u"Une personne du groupe " + id1_txt,
                           u"Une personne du groupe " + id1_txt)
 
-    # DOUBLE
+    # DOUBLE ===================================================================
     else:
-        if q_type == pms.SAME:
+
+        if q_type == pms.SAME: # -----------------------------------------------
 
             if idcomb == pms.ID1__ID2:
                 txt += u"deux personnes simultanément du groupe " \
@@ -145,7 +148,7 @@ def get_txt_expl_decision(id1, idcomb, q_type):
                           u"Une personne exclue du groupe {} et du "
                           u"groupe {}".format(id1_txt, id2_txt))
 
-        elif q_type == pms.MIXED:
+        elif q_type == pms.MIXED:  # -------------------------------------------
 
             if idcomb == pms.ID1__ID2:
                 txt += u"une personne simultanément du groupe {} et {} et " \
@@ -184,13 +187,46 @@ def get_txt_expl_decision(id1, idcomb, q_type):
                           u"une personne qui est dans au moins un des "
                           u"deux groupes")
 
-        # DIFFERENT
+        # DIFFERENT ------------------------------------------------------------
         else:
-            txt += u"deux personnes exclues du groupe {}.".format(
-                get_txt_identity(pms.ID1))
-            labels = (u"Une personne exclue du groupe " + get_txt_identity(
-                          pms.ID1), u"Une personne exclue du groupe " +
-                      get_txt_identity(pms.ID1))
+
+            if idcomb == pms.ID1__ID2:
+                txt += u"deux personnes exclues simultanément du groupe {} et " \
+                       u"du groupe {}.".format(id1_txt, id2_txt)
+                labels = (u"Une personne exclue simultanément du groupe {}"
+                          u" et du groupe {}".format(id1_txt, id2_txt),
+                          u"Une personne exclue simultanément du groupe {}"
+                          u" et du groupe {}".format(id1_txt, id2_txt))
+
+            elif idcomb == pms.ID1__ID2E:
+                txt += u"deux personnes qui ne sont pas simultanément du " \
+                       u"groupe {} et exclues du groupe {}".format(
+                    id1_txt, id2_txt)
+                labels = (u"une personne qui n'est pas simultanément du " \
+                          u"groupe {} et exclue du groupe {}".format(
+                    id1_txt, id2_txt),
+                          u"une personne qui n'est pas simultanément du " \
+                          u"groupe {} et exclue du groupe {}".format(
+                              id1_txt, id2_txt))
+
+            elif idcomb == pms.ID1E__ID2:
+                txt += u"deux personnes qui ne sont pas simultanément exclues du " \
+                       u"groupe {} mais dans le groupe {}".format(
+                    id1_txt, id2_txt)
+                labels = (u"une personne qui n'est pas simultanément exclue du " \
+                          u"groupe {} mais dans le groupe {}".format(
+                    id1_txt, id2_txt),
+                          u"une personne qui n'est pas simultanément exclue du " \
+                          u"groupe {} mais dans le groupe {}".format(
+                              id1_txt, id2_txt))
+
+            else:
+                txt += u"deux personnes simultanément du groupe {} et " \
+                       u"du groupe {}.".format(id1_txt, id2_txt)
+                labels = (u"Une personne simultanément du groupe {}"
+                          u" et du groupe {}".format(id1_txt, id2_txt),
+                          u"Une personne simultanément du groupe {}"
+                          u" et du groupe {}".format(id1_txt, id2_txt))
 
     return txt, labels
 

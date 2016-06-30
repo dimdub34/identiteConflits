@@ -26,8 +26,8 @@ def get_treatment(code_or_name):
 # identitites: E for Excluded
 ID1E = 0
 ID1 = 1
-ID2E = 0
-ID2 = 1
+ID2E = 2
+ID2 = 3
 
 # combined
 ID1E__ID2E = 0
