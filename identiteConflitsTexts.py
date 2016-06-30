@@ -67,8 +67,8 @@ def get_txt_expl_decision(id1, idcomb, q_type):
             txt += u"exclu(e) du groupe {} et exclu(e) du groupe {}.".format(
                 id1_txt, id2_txt)
 
-
-    txt += u" Vous devez choisir une répartition entre "
+    txt += u"<br />" * 2
+    txt += u"Vous devez choisir une répartition entre <strong>"
 
     # MONO =====================================================================
     if pms.TREATMENT == pms.MONO:
@@ -125,7 +125,7 @@ def get_txt_expl_decision(id1, idcomb, q_type):
                                                                     id2_txt))
 
             elif idcomb == pms.ID1__ID2E:
-                txt += u"une personne du groupe {} et exclue du " \
+                txt += u"deux personnes du groupe {} et exclues du " \
                        u"groupe {}".format(id1_txt, id2_txt)
                 labels = (u"Une personne du groupe {} et exclue du "
                           u"groupe {}".format(id1_txt, id2_txt),
@@ -133,7 +133,7 @@ def get_txt_expl_decision(id1, idcomb, q_type):
                           u"groupe {}".format(id1_txt, id2_txt))
 
             elif idcomb == pms.ID1E__ID2:
-                txt += u"une personne exclue du groupe {} et mais dans le " \
+                txt += u"deux personnes exclues du groupe {} et mais dans le " \
                        u"groupe {}".format(id1_txt, id2_txt)
                 labels = (u"Une personne exclue du groupe {} mais dans le  "
                           u"groupe {}".format(id1_txt, id2_txt),
@@ -227,6 +227,8 @@ def get_txt_expl_decision(id1, idcomb, q_type):
                           u" et du groupe {}".format(id1_txt, id2_txt),
                           u"Une personne simultanément du groupe {}"
                           u" et du groupe {}".format(id1_txt, id2_txt))
+
+        txt += u"</strong>"
 
     return txt, labels
 

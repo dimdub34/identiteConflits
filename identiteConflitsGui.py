@@ -28,7 +28,7 @@ class GuiDecision(QtGui.QDialog):
 
         wexplanation = WExplication(
             text=txt_expl,
-            size=(450, 80), parent=self)
+            size=(450, 80), parent=self, html=True)
         layout.addWidget(wexplanation)
 
         wmatrice = Matrice(labels, valeurs)
