@@ -10,6 +10,7 @@ import identiteConflitsParams as pms
 from identiteConflitsTexts import trans_IC
 from client.cltgui.cltguiwidgets import WExplication
 from identiteConflitsWidget import Matrice, Saisies
+import random
 
 
 logger = logging.getLogger("le2m")
@@ -28,14 +29,30 @@ class GuiDecision(QtGui.QDialog):
 
         wexplanation = WExplication(
             text=txt_expl,
-            size=(450, 80), parent=self, html=True)
+            size=(450, 100), parent=self, html=True)
         layout.addWidget(wexplanation)
 
-        wmatrice = Matrice(labels, valeurs)
-        layout.addWidget(wmatrice)
+        random_repart = None
+        if self._automatique:
+            random_vals = random.choice(valeurs)
+            random_repart = valeurs.index(random_vals)
 
-        self._wdecision = Saisies(labels, valeurs, self._automatique)
-        layout.addWidget(self._wdecision)
+        self._wmatrice = Matrice(labels, valeurs, self._automatique,
+                                 random_repart=random_repart)
+        layout.addWidget(self._wmatrice)
+
+        # decision (inside an horizontal layout)
+        lay_wdec = QtGui.QHBoxLayout()
+        lay_wdec.addSpacerItem(
+            QtGui.QSpacerItem(20, 20, QtGui.QSizePolicy.Expanding,
+                              QtGui.QSizePolicy.Expanding))
+        self._wdecision = Saisies(labels, valeurs, self._automatique,
+                                  random_repart=random_repart)
+        lay_wdec.addWidget(self._wdecision)
+        lay_wdec.addSpacerItem(
+            QtGui.QSpacerItem(20, 20, QtGui.QSizePolicy.Expanding,
+                              QtGui.QSizePolicy.Expanding))
+        layout.addLayout(lay_wdec)
 
         buttons = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Ok)
         buttons.accepted.connect(self._accept)
@@ -59,13 +76,27 @@ class GuiDecision(QtGui.QDialog):
             self._timer_automatique.stop()
         except AttributeError:
             pass
+
+        selec = self._wmatrice.get_selected()
+        if selec < 0:
+            QtGui.QMessageBox.warning(
+                self, u"Attention", u"Veuillez sélectionner une répartition")
+            return
+
         vals = self._wdecision.get_values()
         if vals not in self._valeurs:
             QtGui.QMessageBox.warning(
                 self, u"Attention", u"Au moins une des valeurs saisies n'est "
                                     u"pas dans la matrice proposée")
             return
+
         decision = self._valeurs.index(vals)
+        if selec != decision:
+            QtGui.QMessageBox.warning(
+                self, u"Attention", u"La répartition sélectionnée ne correspond "
+                                    u"pas aux valeurs saisies")
+            return
+
         if not self._automatique:
             confirmation = QtGui.QMessageBox.question(
                 self, le2mtrans(u"Confirmation"),
