@@ -36,7 +36,7 @@ def get_txt_personne(com_or_diff):
     if com_or_diff == COM:
         return u"personne identifiée exactement comme vous"
     else:
-        return u"personne pas identifiée exactement comme vous"
+        return u"personne pas identifiée comme vous"
 
 
 def get_histo_head():
@@ -87,11 +87,11 @@ def get_txt_expl_decision(id1, idcomb, q_type):
 
     elif q_type == pms.MIXED:
         txt += u"une personne identifiée exactement comme vous et une " \
-               u"personne pas identifiée exactement comme vous."
+               u"personne pas identifiée comme vous."
         labels = (get_txt_personne(COM), get_txt_personne(DIFF))
 
     else:
-        txt += u"deux personnes pas identifiées exactement comme vous."
+        txt += u"deux personnes pas identifiées comme vous."
         labels = (get_txt_personne(DIFF), get_txt_personne(DIFF))
 
     txt += u"</strong>"
