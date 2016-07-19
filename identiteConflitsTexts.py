@@ -48,20 +48,20 @@ def get_txt_expl_decision(id1, idcomb, q_type):
     # MONO
     if pms.TREATMENT == pms.MONO:
         if id1 == pms.ID1:
-            txt += u"dans le groupe {}.".format(id1_txt)
+            txt += u"membre du groupe {}.".format(id1_txt)
         else:
             txt += u"exclu(e) du groupe {}.".format(id1_txt)
 
     # DOUBLE
     else:
         if idcomb == pms.ID1__ID2:
-            txt += u"dans le groupe {} et dans le groupe {}.".format(
+            txt += u"membre du groupe {} et membre du groupe {}.".format(
                 id1_txt, id2_txt)
         elif idcomb == pms.ID1__ID2E:
-            txt += u"dans le groupe {} mais exclu(e) du groupe {}.".format(
+            txt += u"membre du groupe {} mais exclu(e) du groupe {}.".format(
                 id1_txt, id2_txt)
         elif idcomb == pms.ID1E__ID2:
-            txt += u"exclu(e) du groupe {} mais dans le groupe {}.".format(
+            txt += u"exclu(e) du groupe {} mais membre du groupe {}.".format(
                 id1_txt, id2_txt)
         else:
             txt += u"exclu(e) du groupe {} et exclu(e) du groupe {}.".format(
@@ -72,19 +72,19 @@ def get_txt_expl_decision(id1, idcomb, q_type):
 
     if q_type == pms.SAME:
         txt += u"deux personnes identifiées comme vous."
-        labels = (u"une personne identifiée comme vous",
-                  u"une personne identifiée comme vous")
+        labels = (u"personne identifiée comme vous",
+                  u"personne identifiée comme vous")
 
     elif q_type == pms.MIXED:
         txt += u"une personne identifiée comme vous et une personne pas " \
                u"identifiée comme vous."
-        labels = (u"une personne identifiée comme vous",
-                  u"une personne pas identifiée comme vous")
+        labels = (u"personne identifiée comme vous",
+                  u"personne pas identifiée comme vous")
 
     else:
         txt += u"deux personnes pas identifiées comme vous."
-        labels = (u"une personne pas identifiée comme vous",
-                  u"une personne pas identifiée comme vous")
+        labels = (u"personne pas identifiée comme vous",
+                  u"personne pas identifiée comme vous")
 
     txt += u"</strong>"
 
