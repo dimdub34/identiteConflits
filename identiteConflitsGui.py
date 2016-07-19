@@ -29,7 +29,7 @@ class GuiDecision(QtGui.QDialog):
 
         wexplanation = WExplication(
             text=txt_expl,
-            size=(450, 100), parent=self, html=True)
+            size=(450, 120), parent=self, html=True)
         layout.addWidget(wexplanation)
 
         random_repart = None
