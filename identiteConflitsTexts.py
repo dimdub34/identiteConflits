@@ -21,11 +21,22 @@ except IOError:
     trans_IC = lambda x: x  # if there is an error, no translation
 
 
+COM = 0
+DIFF = 1
+
+
 def get_txt_identity(identity):
     if identity == pms.ID1:
         return u"jaune"
     else:
         return u"carré"
+
+
+def get_txt_personne(com_or_diff):
+    if com_or_diff == COM:
+        return u"personne identifiée exactement comme vous"
+    else:
+        return u"personne pas identifiée exactement comme vous"
 
 
 def get_histo_head():
@@ -71,20 +82,17 @@ def get_txt_expl_decision(id1, idcomb, q_type):
     txt += u"Vous devez choisir une répartition entre <strong>"
 
     if q_type == pms.SAME:
-        txt += u"deux personnes identifiées comme vous."
-        labels = (u"personne identifiée comme vous",
-                  u"personne identifiée comme vous")
+        txt += u"deux personnes identifiées exactement comme vous."
+        labels = (get_txt_personne(COM), get_txt_personne(COM))
 
     elif q_type == pms.MIXED:
-        txt += u"une personne identifiée comme vous et une personne pas " \
-               u"identifiée comme vous."
-        labels = (u"personne identifiée comme vous",
-                  u"personne pas identifiée comme vous")
+        txt += u"une personne identifiée exactement comme vous et une " \
+               u"personne pas identifiée exactement comme vous."
+        labels = (get_txt_personne(COM), get_txt_personne(DIFF))
 
     else:
-        txt += u"deux personnes pas identifiées comme vous."
-        labels = (u"personne pas identifiée comme vous",
-                  u"personne pas identifiée comme vous")
+        txt += u"deux personnes pas identifiées exactement comme vous."
+        labels = (get_txt_personne(DIFF), get_txt_personne(DIFF))
 
     txt += u"</strong>"
 
