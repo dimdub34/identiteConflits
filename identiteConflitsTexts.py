@@ -69,10 +69,10 @@ def get_txt_expl_decision(id1, idcomb, q_type):
             txt += u"membre du groupe {} et membre du groupe {}.".format(
                 id1_txt, id2_txt)
         elif idcomb == pms.ID1__ID2E:
-            txt += u"membre du groupe {} mais exclu(e) du groupe {}.".format(
+            txt += u"membre du groupe {} et exclu(e) du groupe {}.".format(
                 id1_txt, id2_txt)
         elif idcomb == pms.ID1E__ID2:
-            txt += u"exclu(e) du groupe {} mais membre du groupe {}.".format(
+            txt += u"exclu(e) du groupe {} et membre du groupe {}.".format(
                 id1_txt, id2_txt)
         else:
             txt += u"exclu(e) du groupe {} et exclu(e) du groupe {}.".format(
