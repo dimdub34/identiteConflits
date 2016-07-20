@@ -102,6 +102,7 @@ class PartieIC(Partie):
         order = getattr(pms, "ORDER_{}".format(self.currentperiod.IC_order))[:]
 
         debut = datetime.now()
+        cpt = 1
         for q in order:
             q_type, q_num = q.split("_")
             q_type = pms.SAME if q_type == "s" else pms.MIXED if q_type == "m" \
@@ -117,7 +118,8 @@ class PartieIC(Partie):
                     "IC_decision_{}_{}".format(q_dec, q_num), dec)
             setattr(self.currentperiod, "IC_decision_{}_{}_time".format(
                 q_dec, q_num), (datetime.now() - deb).seconds)
-            self.joueur.info(u"{}_{} - {}".format(q_dec, q_num, dec))
+            self.joueur.info(u"{}_{} - {} ({})".format(q_dec, q_num, dec, cpt))
+            cpt += 1
         self.currentperiod.ID_decision_time = (datetime.now() - debut).seconds
         self.joueur.remove_waitmode()
 
