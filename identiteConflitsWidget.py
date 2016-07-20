@@ -55,7 +55,7 @@ class Matrice(QtGui.QWidget):
         lab_bot = QtGui.QLabel(labels[1])
         lab_bot.setAlignment(QtCore.Qt.AlignRight)
         widget_lab_lay.addWidget(lab_bot)
-        widget_lab.setFixedSize(200, 50)
+        widget_lab.setFixedSize(250, 50)
         layout.addWidget(widget_lab)
 
         self._selected = -1
